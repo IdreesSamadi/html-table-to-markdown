@@ -9,7 +9,11 @@ specifiers:
   '@vscode/test-cli': ^0.0.11
   '@vscode/test-electron': ^2.5.2
   eslint: ^9.25.1
+  markdown-table-prettify: ^3.6.0
   typescript: ^5.8.3
+
+dependencies:
+  markdown-table-prettify: 3.6.0
 
 devDependencies:
   '@types/mocha': 10.0.10
@@ -1170,6 +1174,12 @@ packages:
     dependencies:
       semver: 7.7.2
     dev: true
+
+  /markdown-table-prettify/3.6.0:
+    resolution: {integrity: sha512-xZg+sL5yWyPz75GwNHtCOLe85CPnssoTLqpGc19xSr6CirGu4xRW2f8wj1f7c8Kx1IItXo3hUIqlUX4qAOwAdg==}
+    engines: {vscode: ^1.59.0}
+    hasBin: true
+    dev: false
 
   /merge2/1.4.1:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
