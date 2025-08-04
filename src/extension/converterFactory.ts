@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { TABLE, CELL, HEADER, ROW, CELL_CONTENT } from './constants';
 import { CliPrettify } from 'markdown-table-prettify';
+
+import { TABLE, CELL, HEADER, ROW, CELL_CONTENT, TABLE_CAPTION } from './constants';
 
 const displayError = (message: string): void => {
 	vscode.window.showErrorMessage(message);
@@ -26,18 +27,24 @@ export const isValidText = (): boolean => {
 };
 
 export const htmlTableToMarkdown = (): string => {
-  const editor = vscode.window.activeTextEditor!;
-  const html = editor.document.getText(editor.selection);
+	const editor = vscode.window.activeTextEditor!;
+	const html = editor.document.getText(editor.selection);
 
 	const match = html.match(TABLE);
 	if (match) {
-		let markdownString = '';
 		let tableHeader = '|';
 		let tableHeaderFooter = '|';
 		let tableRows = '';
 		let tableHeaderFound = false;
 		let tableHeaderCellCount = 0;
 		let prevRowCellCount = 0;
+		let tableCaption = '';
+
+		// Extract caption if present
+		const captionMatch = html.match(TABLE_CAPTION);
+		if (captionMatch) {
+			tableCaption = `\n${captionMatch[1]}\n\n`;
+		}
 
 		const headerMatches = html.match(HEADER);
 		if (headerMatches) {
@@ -72,37 +79,33 @@ export const htmlTableToMarkdown = (): string => {
 			});
 		}
 
-		if (markdownString === '') {
-			if (tableHeaderFound) {
-				if (tableHeaderCellCount !== prevRowCellCount) {
-					displayError('The number of cells in your header does not match the number of cells in your rows.');
-					return html;
-				}
-			} else {
-				for (let i = 0; i < prevRowCellCount; i++) {
-					tableHeader += '|';
-					tableHeaderFooter += '--- |';
-				}
+		if (tableHeaderFound) {
+			if (tableHeaderCellCount !== prevRowCellCount) {
+				displayError('The number of cells in your header does not match the number of cells in your rows.');
+				return html;
 			}
-
-			markdownString += `${tableHeader}\n${tableHeaderFooter}\n${tableRows}`;
+		} else {
+			for (let i = 0; i < prevRowCellCount; i++) {
+				tableHeader += '|';
+				tableHeaderFooter += '--- |';
+			}
 		}
 
-		return CliPrettify.prettify(markdownString);
+		return CliPrettify.prettify(`${tableCaption}${tableHeader}\n${tableHeaderFooter}\n${tableRows}`);
 	} else {
-    displayError('No valid HTML table found in the selected text.');
-    return html; 
-  }
+		displayError('No valid HTML table found in the selected text.');
+		return html;
+	}
 };
 
 export const replaceHtmlTableWithMarkdown = (markdownTable: string): void => {
-  const editor = vscode.window.activeTextEditor!;
-  const selection = editor.selection;
-  editor.edit(editBuilder => {
-    editBuilder.replace(selection, markdownTable);
-  }).then(success => {
-    if (!success) {
-      displayError('Failed to replace HTML table with Markdown.');
-    }
-  });
+	const editor = vscode.window.activeTextEditor!;
+	const selection = editor.selection;
+	editor.edit(editBuilder => {
+		editBuilder.replace(selection, markdownTable);
+	}).then(success => {
+		if (!success) {
+			displayError('Failed to replace HTML table with Markdown.');
+		}
+	});
 };
