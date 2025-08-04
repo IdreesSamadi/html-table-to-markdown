@@ -2,6 +2,10 @@ import * as vscode from 'vscode';
 import { TABLE, CELL, HEADER, ROW, CELL_CONTENT } from './constants';
 import { CliPrettify } from 'markdown-table-prettify';
 
+const displayError = (message: string): void => {
+	vscode.window.showErrorMessage(message);
+};
+
 export const isValidText = (): boolean => {
 	const editor = vscode.window.activeTextEditor;
 	if (editor) {
@@ -9,13 +13,13 @@ export const isValidText = (): boolean => {
 			if (editor.document.getText(editor.selection)) {
 				return true;
 			} else {
-				vscode.window.showErrorMessage('No text selected to convert.');
+				displayError('No text selected to convert.');
 			}
 		} else {
-			vscode.window.showErrorMessage('This command can only be used in Markdown files.');
+			displayError('This command can only be used in Markdown files.');
 		}
 	} else {
-		vscode.window.showErrorMessage('No active text editor found.');
+		displayError('No active text editor found.');
 	}
 
 	return false;
@@ -25,38 +29,68 @@ export const htmlTableToMarkdown = (): string => {
   const editor = vscode.window.activeTextEditor!;
   const html = editor.document.getText(editor.selection);
 
-	const markdownTable: string[] = [];
 	const match = html.match(TABLE);
 	if (match) {
-		const rows = match[1].match(ROW);
-		if (rows) {
-			rows.forEach((row, index) => {
-				const cells = row.match(CELL);
-				if (cells) {
-					const markdownRow = cells.map(cell => {
-						const content = cell.replace(CELL_CONTENT, '').trim();
-						return content;
-					}).join(' | ');
-					if (index === 0) {
-						// First row is header
-						markdownTable.push(`| ${markdownRow} |`);
-						// Add separator row
-						const headerCells = row.match(HEADER);
-						if (headerCells) {
-							const separatorRow = headerCells.map(() => '---').join(' | ');
-							markdownTable.push(`| ${separatorRow} |`);
+		let markdownString = '';
+		let tableHeader = '|';
+		let tableHeaderFooter = '|';
+		let tableRows = '';
+		let tableHeaderFound = false;
+		let tableHeaderCellCount = 0;
+		let prevRowCellCount = 0;
+
+		const headerMatches = html.match(HEADER);
+		if (headerMatches) {
+			headerMatches.forEach(header => {
+				const headerContent = header.replace(CELL_CONTENT, '').trim();
+				tableHeader += ` ${headerContent} |`;
+				tableHeaderFooter += ' --- |';
+				tableHeaderFound = true;
+				tableHeaderCellCount++;
+			});
+		}
+
+		const rowMatches = html.match(ROW);
+		if (rowMatches) {
+			rowMatches.forEach(row => {
+				let rowContent = '';
+				const cellMatches = row.match(CELL);
+				if (cellMatches) {
+					cellMatches.forEach(cell => {
+						const cellContent = cell.replace(CELL_CONTENT, '').trim();
+						rowContent += ` ${cellContent} |`;
+					});
+					if (rowContent.trim()) {
+						tableRows += `|${rowContent}\n`;
+						if (prevRowCellCount && prevRowCellCount !== cellMatches.length) {
+							displayError('HTML table rows do not have the same number of cells. Colspan not supported.');
+							return html;
 						}
-					} else {
-						// Subsequent rows are data
-						markdownTable.push(`| ${markdownRow} |`);
+						prevRowCellCount = cellMatches.length;
 					}
 				}
 			});
 		}
-    
-    return CliPrettify.prettify(markdownTable.join('\n'));
+
+		if (markdownString === '') {
+			if (tableHeaderFound) {
+				if (tableHeaderCellCount !== prevRowCellCount) {
+					displayError('The number of cells in your header does not match the number of cells in your rows.');
+					return html;
+				}
+			} else {
+				for (let i = 0; i < prevRowCellCount; i++) {
+					tableHeader += '|';
+					tableHeaderFooter += '--- |';
+				}
+			}
+
+			markdownString += `${tableHeader}\n${tableHeaderFooter}\n${tableRows}`;
+		}
+
+		return CliPrettify.prettify(markdownString);
 	} else {
-    vscode.window.showErrorMessage('No valid HTML table found in the selected text.');
+    displayError('No valid HTML table found in the selected text.');
     return html; 
   }
 };
@@ -68,7 +102,7 @@ export const replaceHtmlTableWithMarkdown = (markdownTable: string): void => {
     editBuilder.replace(selection, markdownTable);
   }).then(success => {
     if (!success) {
-      vscode.window.showErrorMessage('Failed to replace HTML table with Markdown.');
+      displayError('Failed to replace HTML table with Markdown.');
     }
   });
 };
