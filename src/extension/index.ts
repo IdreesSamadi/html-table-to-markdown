@@ -7,7 +7,8 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerTextEditorCommand(command, () => {
 			if (isValidText()) {
-				replaceHtmlTableWithMarkdown((htmlTableToMarkdown()));
+				const editor = vscode.window.activeTextEditor!;
+				replaceHtmlTableWithMarkdown(htmlTableToMarkdown(editor.document.getText(editor.selection)));
 			}
 		})
 	);

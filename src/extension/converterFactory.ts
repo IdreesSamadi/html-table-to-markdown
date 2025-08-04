@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { CliPrettify } from 'markdown-table-prettify';
 
-import { TABLE, CELL, HEADER, ROW, CELL_CONTENT, TABLE_CAPTION } from './constants';
+import { TABLE, CELL, HEADER, CELL_CONTENT, TABLE_CAPTION, ROW_WITHOUT_HEADER } from './constants';
 
 const displayError = (message: string): void => {
 	vscode.window.showErrorMessage(message);
@@ -26,10 +26,7 @@ export const isValidText = (): boolean => {
 	return false;
 };
 
-export const htmlTableToMarkdown = (): string => {
-	const editor = vscode.window.activeTextEditor!;
-	const html = editor.document.getText(editor.selection);
-
+export const htmlTableToMarkdown = (html: string): string => {
 	const match = html.match(TABLE);
 	if (match) {
 		let tableHeader = '|';
@@ -46,6 +43,7 @@ export const htmlTableToMarkdown = (): string => {
 			tableCaption = `\n${captionMatch[1]}\n\n`;
 		}
 
+		// Process header
 		const headerMatches = html.match(HEADER);
 		if (headerMatches) {
 			headerMatches.forEach(header => {
@@ -57,7 +55,7 @@ export const htmlTableToMarkdown = (): string => {
 			});
 		}
 
-		const rowMatches = html.match(ROW);
+		const rowMatches = html.match(ROW_WITHOUT_HEADER);
 		if (rowMatches) {
 			rowMatches.forEach(row => {
 				let rowContent = '';
