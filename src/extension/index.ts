@@ -1,14 +1,23 @@
 import * as vscode from 'vscode';
-import { htmlTableToMarkdown, isValidText, replaceHtmlTableWithMarkdown } from './converterFactory';
+
+import { htmlTableToMarkdown } from './converterFactory';
+import { formatMarkdownTable } from './formatterFactory';
+import { getSelectedText, isValidText, replaceInEditor } from './util';
+import { COMMAND_CONVERT, COMMAND_FORMAT } from './constants';
 
 export function activate(context: vscode.ExtensionContext) {
-	const command = 'html-table-to-markdown.convertTable';
+	context.subscriptions.push(
+		vscode.commands.registerTextEditorCommand(COMMAND_CONVERT, () => {
+			if (isValidText()) {
+				replaceInEditor(htmlTableToMarkdown(getSelectedText()));
+			}
+		})
+	);
 
 	context.subscriptions.push(
-		vscode.commands.registerTextEditorCommand(command, () => {
+		vscode.commands.registerTextEditorCommand(COMMAND_FORMAT, () => {
 			if (isValidText()) {
-				const editor = vscode.window.activeTextEditor!;
-				replaceHtmlTableWithMarkdown(htmlTableToMarkdown(editor.document.getText(editor.selection)));
+				replaceInEditor(formatMarkdownTable(getSelectedText()));
 			}
 		})
 	);

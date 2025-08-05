@@ -1,3 +1,8 @@
+// Command constants
+export const COMMAND_CONVERT = 'html-table-to-markdown.convertTable';
+export const COMMAND_FORMAT = 'html-table-to-markdown.formatTable';
+
+// Regular expressions for HTML table parsing
 export const TABLE = /<table\b[^>]*>([\s\S]*?)<\/table>/i;
 export const T_HEADER = /<thead\b[^>]*>([\s\S]*?)<\/thead>/gi;
 export const HEADER = /<th\b[^>]*>([\s\S]*?)<\/th>/gi;

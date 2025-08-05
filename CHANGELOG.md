@@ -6,4 +6,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
-- Initial release
+## Initial release
+- Basic functionality to convert HTML tables to Markdown tables.
+- Format Markdown tables using `markdown-table-prettify`.

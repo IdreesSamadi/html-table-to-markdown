@@ -1,30 +1,6 @@
-import * as vscode from 'vscode';
-import { CliPrettify } from 'markdown-table-prettify';
-
 import { TABLE, CELL, HEADER, CELL_CONTENT, TABLE_CAPTION, ROW_WITHOUT_HEADER } from './constants';
-
-const displayError = (message: string): void => {
-	vscode.window.showErrorMessage(message);
-};
-
-export const isValidText = (): boolean => {
-	const editor = vscode.window.activeTextEditor;
-	if (editor) {
-		if (editor.document.languageId === 'mdc' || editor.document.languageId === 'markdown') {
-			if (editor.document.getText(editor.selection)) {
-				return true;
-			} else {
-				displayError('No text selected to convert.');
-			}
-		} else {
-			displayError('This command can only be used in Markdown files.');
-		}
-	} else {
-		displayError('No active text editor found.');
-	}
-
-	return false;
-};
+import { formatMarkdownTable } from './formatterFactory';
+import { displayError } from './util';
 
 export const htmlTableToMarkdown = (html: string): string => {
 	const match = html.match(TABLE);
@@ -89,21 +65,9 @@ export const htmlTableToMarkdown = (html: string): string => {
 			}
 		}
 
-		return CliPrettify.prettify(`${tableCaption}${tableHeader}\n${tableHeaderFooter}\n${tableRows}`);
+		return formatMarkdownTable(`${tableCaption}${tableHeader}\n${tableHeaderFooter}\n${tableRows}`);
 	} else {
 		displayError('No valid HTML table found in the selected text.');
 		return html;
 	}
-};
-
-export const replaceHtmlTableWithMarkdown = (markdownTable: string): void => {
-	const editor = vscode.window.activeTextEditor!;
-	const selection = editor.selection;
-	editor.edit(editBuilder => {
-		editBuilder.replace(selection, markdownTable);
-	}).then(success => {
-		if (!success) {
-			displayError('Failed to replace HTML table with Markdown.');
-		}
-	});
 };

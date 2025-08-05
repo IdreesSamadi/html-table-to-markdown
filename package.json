@@ -16,6 +16,10 @@
       {
         "command": "html-table-to-markdown.convertTable",
         "title": "HTML table to Markdown: Convert HTML Table to Markdown"
+      },
+      {
+        "command": "html-table-to-markdown.formatTable",
+        "title": "HTML table to Markdown: Format Table"
       }
     ]
   },
