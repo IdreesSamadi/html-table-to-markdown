@@ -3,11 +3,26 @@
   "displayName": "HTML Table to Markdown",
   "description": "Convert HTML tables to Markdown format easily.",
   "version": "0.0.1",
+  "publisher": "IdreesSamadi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IdreesSamadi/html-table-to-markdown"
+  },
+  "bugs": {
+    "url": "https://github.com/IdreesSamadi/html-table-to-markdown/issues"
+  },
+  "icon": "images/logo.png",
   "engines": {
     "vscode": "^1.102.0"
-  },
+  },  
   "categories": [
-    "Other"
+    "Formatters"
+  ],
+  "keywords": [
+    "html",
+    "markdown",
+    "table",
+    "converter"
   ],
   "activationEvents": [],
   "main": "./out/extension/index.js",
